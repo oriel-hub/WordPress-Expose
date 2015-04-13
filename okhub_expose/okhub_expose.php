@@ -26,32 +26,34 @@ License: GPLv3
 
 if (!defined('IDS_API_ENVIRONMENT')) define('IDS_API_ENVIRONMENT', 'wordpress');
 
-if (!defined('IDS_API_LIBRARY_PATH')) {
+if (!defined('IDS_API_LIBRARY_DIR')) {
   if ($dirs_wrapper = glob(WP_PLUGIN_DIR . '{/*/,/}idswrapper/', GLOB_BRACE)) {
-    define('IDS_API_LIBRARY_PATH', $dirs_wrapper[0]);
+    define('IDS_API_LIBRARY_DIR', $dirs_wrapper[0]);
+    define('IDS_API_LIBRARY_PATH', plugin_basename($dirs_wrapper[0]));
   }
   else {
     wp_die(__('OKHub Expose: The required directory "idswrapper" was not found. Please download it from https://github.com/IDS-API/PHP-wrapper/archive/master.zip and place it in the plugins directory.'));
   }
 }
-if (file_exists(IDS_API_LIBRARY_PATH) && is_readable(IDS_API_LIBRARY_PATH)) {
-  require_once(IDS_API_LIBRARY_PATH . 'idswrapper.wrapper.inc');
+if (file_exists(IDS_API_LIBRARY_DIR) && is_readable(IDS_API_LIBRARY_DIR)) {
+  require_once(IDS_API_LIBRARY_DIR . 'idswrapper.wrapper.inc');
 } else {
   wp_die(__('OKHub Expose: The directory "idswrapper" or its contents could not be read.'));
 }
 
-if (!defined('IDS_COMMON_FILES_PATH')) {
+if (!defined('IDS_COMMON_FILES_DIR')) {
   if ($dirs_common = glob(WP_PLUGIN_DIR . '{/*/,/}idsplugins_common/', GLOB_BRACE)) {
-    define('IDS_COMMON_FILES_PATH', $dirs_common[0]);
+    define('IDS_COMMON_FILES_DIR', $dirs_common[0]);
+    define('IDS_COMMON_FILES_PATH', plugin_basename($dirs_common[0]));
   }
   else {
     wp_die(__('OKHub Expose: The required directory "idsplugins_common" was not found. Please download it from https://github.com/IDS-API/WordPress-Common-Files/archive/master.zip and place it in the plugins directory.'));
   }
 }
-if (file_exists(IDS_COMMON_FILES_PATH) && is_readable(IDS_COMMON_FILES_PATH)) {
-  require_once(IDS_COMMON_FILES_PATH . 'idsplugins.customtypes.inc');
-  require_once(IDS_COMMON_FILES_PATH . 'idsplugins.functions.inc');
-  require_once(IDS_COMMON_FILES_PATH . 'idsplugins.html.inc');
+if (file_exists(IDS_COMMON_FILES_DIR) && is_readable(IDS_COMMON_FILES_DIR)) {
+  require_once(IDS_COMMON_FILES_DIR . 'idsplugins.customtypes.inc');
+  require_once(IDS_COMMON_FILES_DIR . 'idsplugins.functions.inc');
+  require_once(IDS_COMMON_FILES_DIR . 'idsplugins.html.inc');
 } else {
   wp_die(__('OKHub Expose: The directory "idsplugins_common" or its contents could not be read.'));
 }
@@ -157,11 +159,11 @@ function okhub_expose_add_menu() {
 }
 
 function okhub_expose_feed_ids_assets() {
-	load_template(plugin_dir_path( dirname(__FILE__) ) . IDS_TEMPLATES_PATH . '/okhub_expose_assets_template.php');
+	load_template(dirname(__FILE__) . '/templates/okhub_expose_assets_template.php');
 }
 
 function okhub_expose_feed_ids_categories() {
-	load_template(plugin_dir_path( dirname(__FILE__) ) . IDS_TEMPLATES_PATH . '/okhub_expose_categories_template.php');
+	load_template(dirname(__FILE__) . '/templates/okhub_expose_categories_template.php');
 }
 
 function okhub_expose_get_post_types() {
