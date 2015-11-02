@@ -88,21 +88,20 @@ echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?>';
       }
     ?>
     <?php
-      // Custom (meta) fields from acf. At the moment, only does file fields.
-      if ($acf_fields = okhub_expose_acf_fields($post->ID)) { // Check if ACF is in use
-          foreach ($acf_fields as $acf_field => $value) {
-		//if (in_array($field, $exposed_custom_fields)) {
-		okhub_expose_print_xml(apply_filters('exposed_tag', $acf_field, $post_type), $value);
-          }
-      }
-
+      // Custom (meta) fields, including those from ACF. At the moment, this only processes file fields.
       $post_meta = get_post_meta($post->ID);
       if ($post_meta) {
+        $acf_fields = okhub_expose_acf_fields($post->ID); // Get an array of name/value items from acf. Value may be xml.
         foreach ($post_meta as $field => $value) {
-          if (in_array($field, $exposed_custom_fields)) {
-            $tag = apply_filters('exposed_tag', $field, $post_type);
-            if ($value = apply_filters('exposed_post_value', $post->{$field}, $field, $post_type)) {
-              okhub_expose_print_xml($tag, $value);
+          if (in_array($field, $exposed_custom_fields)) { // If we want to expose the field
+	     if (array_key_exists($field, $acf_fields)) {
+		$tag = apply_filters('exposed_tag', $field, $post_type);
+              echo "<$tag>" . $acf_fields[$field] . "</$tag>"; // Create directly so that it doesn't escape the xml
+            } else {
+              $tag = apply_filters('exposed_tag', $field, $post_type);
+              if ($value = apply_filters('exposed_post_value', $post->{$field}, $field, $post_type)) {
+                okhub_expose_print_xml($tag, $value);
+              }
             }
           }
         }

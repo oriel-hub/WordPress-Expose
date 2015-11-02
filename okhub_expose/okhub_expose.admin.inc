@@ -585,7 +585,7 @@ function okhub_expose_valid_xml_name($qname) {
 
 
 // Check if we have acf installed. If so, we want to get the whole value of the custom field, not just the value.
-// for file field types, this will be an array which includes the url (useful!)
+// for file field types, this will be an array which includes the url (useful!) or just the url (as string)
 function okhub_expose_acf_fields($post_id) {
    $acf_fields = array();
    // Check if ACF is in use. Can't use (!is_plugin_active('acf')) as we're not in admin. This is how acf itsefl does it. 
@@ -597,14 +597,33 @@ function okhub_expose_acf_fields($post_id) {
    $fields = get_fields();
    if ($fields) {
 	foreach( $fields as $field_name => $value) {
-           $field_object = get_field_object($field_name, $post_id, array('load_value'=>FALSE)); // Already have vlaue sop don't need it again
+           $field_object = get_field_object($field_name, $post_id, array('load_value'=>TRUE)); 
+           $key = $field_object['key']; // Use the key, to ensure we get the proper value
            // Process files only
            if ($field_object['type'] == 'file') {
-               $field = get_field($field_name);
-               // Convert the field object array into an xml string.
-               $xml = new SimpleXMLElement("<$field_name/>");
-               array_walk_recursive(array_flip($field), array ($xml, 'addChild'));
-               $acf_fields[$field_name] = str_replace('<?xml version="1.0"?>', '', $xml->asXML()); // Take out the xml header.
+               $id = get_field($key, false, false); // get database Id
+               $attachment = get_post( $id );
+               if ($attachment) {
+                   // create array to hold value data
+                   $value = array(
+                     'id' => $attachment->ID,
+			'alt' => get_post_meta($attachment->ID, '_wp_attachment_image_alt', true),
+			'title' => $attachment->post_title,
+			'caption' => $attachment->post_excerpt,
+			'description' => $attachment->post_content,
+			'mime_type'	=> $attachment->post_mime_type,
+			'url' => wp_get_attachment_url( $attachment->ID ),
+                   );
+                   if (is_array($value)) {
+                     // Convert the field object array into an xml string.
+                     $xml = new SimpleXMLElement("<$field_name/>");
+                     array_walk_recursive(array_flip($value), array ($xml, 'addChild'));
+                     $acf_fields[$field_name] = str_replace('<?xml version="1.0"?>', '', $xml->asXML()); // Take out the xml header.
+                   } else {
+                     // We just have a string, so pass that back
+                     $acf_fields[$field_name] = $value;
+                   }
+               }
            }
        }
    }
