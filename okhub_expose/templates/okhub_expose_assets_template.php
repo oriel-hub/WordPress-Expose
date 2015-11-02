@@ -88,7 +88,14 @@ echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?>';
       }
     ?>
     <?php
-      // Custom (meta) fields
+      // Custom (meta) fields from acf. At the moment, only does file fields.
+      if ($acf_fields = okhub_expose_acf_fields($post->ID)) { // Check if ACF is in use
+          foreach ($acf_fields as $acf_field => $value) {
+		//if (in_array($field, $exposed_custom_fields)) {
+		okhub_expose_print_xml(apply_filters('exposed_tag', $acf_field, $post_type), $value);
+          }
+      }
+
       $post_meta = get_post_meta($post->ID);
       if ($post_meta) {
         foreach ($post_meta as $field => $value) {

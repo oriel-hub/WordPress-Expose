@@ -584,3 +584,29 @@ function okhub_expose_valid_xml_name($qname) {
 }
 
 
+// Check if we have acf installed. If so, we want to get the whole value of the custom field, not just the value.
+// for file field types, this will be an array which includes the url (useful!)
+function okhub_expose_acf_fields($post_id) {
+   $acf_fields = array();
+   // Check if ACF is in use. Can't use (!is_plugin_active('acf')) as we're not in admin. This is how acf itsefl does it. 
+   if (!(class_exists('acf'))) {
+      return $acf_fields;
+   }
+
+   // Get all custom fields, loop through them and load the field object to create a label => value markup
+   $fields = get_fields();
+   if ($fields) {
+	foreach( $fields as $field_name => $value) {
+           $field_object = get_field_object($field_name, $post_id, array('load_value'=>FALSE)); // Already have vlaue sop don't need it again
+           // Process files only
+           if ($field_object['type'] == 'file') {
+               $field = get_field($field_name);
+               // Convert the field object array into an xml string.
+               $xml = new SimpleXMLElement("<$field_name/>");
+               array_walk_recursive(array_flip($field), array ($xml, 'addChild'));
+               $acf_fields[$field_name] = str_replace('<?xml version="1.0"?>', '', $xml->asXML()); // Take out the xml header.
+           }
+       }
+   }
+   return $acf_fields;
+}
