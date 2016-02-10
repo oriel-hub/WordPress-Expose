@@ -563,7 +563,7 @@ function okhub_expose_validate_options($input) {
   }
   if ($error) {
     $input['setup_done'] = FALSE;
-    add_settings_error('idsimport_options', 'idsimport_errors', $error_message);
+    add_settings_error('okhub_expose_options', 'okhub_expose_options', $error_message);
   }
   else {
     $input['setup_done'] = TRUE;
